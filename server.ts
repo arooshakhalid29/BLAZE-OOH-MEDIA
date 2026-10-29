@@ -40,8 +40,21 @@ function sanitizeForFirestore<T>(obj: T): T {
   return obj;
 }
 
+process.on('uncaughtException', (err) => {
+  console.error('[Blaze Server] Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.warn('[Blaze Server] Unhandled Rejection:', reason);
+});
+
+function getCliArg(flag: string): string | undefined {
+  const idx = process.argv.indexOf(flag);
+  return idx >= 0 && idx < process.argv.length - 1 ? process.argv[idx + 1] : undefined;
+}
+
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(getCliArg('--port') || process.env.PORT || 3000);
+const HOST = getCliArg('--host') || process.env.HOST || '0.0.0.0';
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Increase payload limits for Excel binary and base64 uploads
@@ -1484,8 +1497,8 @@ async function startServer() {
     }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Blaze OOH Media Engine] Server active on port ${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`[Blaze OOH Media Engine] Server active on ${HOST}:${PORT}`);
     console.log(`[Host Target] http://app2.blaze.com.pk/ [Windows Desktop Edition]`);
   });
 }
