@@ -40,6 +40,7 @@ import { ManageClientsModal } from './components/modals/ManageClientsModal';
 import { ManageVendorsModal } from './components/modals/ManageVendorsModal';
 import { StartingLoginWindow } from './components/modals/StartingLoginWindow';
 import { DeleteAssetConfirmationModal } from './components/modals/DeleteAssetConfirmationModal';
+import { ChangePasswordModal } from './components/modals/ChangePasswordModal';
 import { CheckCircle2, AlertCircle, Info, ShieldCheck, User } from 'lucide-react';
 import {
   testFirestoreConnection,
@@ -153,6 +154,7 @@ export default function App() {
   >('client');
   const [isBookingsModalOpen, setIsBookingsModalOpen] = useState<boolean>(false);
   const [isManageClientsOpen, setIsManageClientsOpen] = useState<boolean>(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState<boolean>(false);
 
   const openLoginModal = (
     mode: 'client' | 'administrator' | 'signin' | 'register' = 'client'
@@ -1059,6 +1061,7 @@ export default function App() {
         onOpenBookingsModal={() => setIsBookingsModalOpen(true)}
         onOpenManageClients={() => setIsManageClientsOpen(true)}
         onOpenManageVendors={() => setIsManageVendorsOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
         onSignOut={handleSignOut}
         onSwitchRole={handleSwitchRole}
       />
@@ -1103,6 +1106,7 @@ export default function App() {
         onOpenBookingsModal={() => setIsBookingsModalOpen(true)}
         onOpenManageClients={() => setIsManageClientsOpen(true)}
         onOpenManageVendors={() => setIsManageVendorsOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordModalOpen(true)}
         selectedCitiesCount={filters.selectedCities.length}
         onOpenCitiesModal={() => setIsCitiesModalOpen(true)}
       />
@@ -1264,6 +1268,18 @@ export default function App() {
           onVendorsUpdated={(updatedVendors) => setVendors(updatedVendors)}
           onRefreshAssets={() => {
             // Re-fetch assets if names changed
+          }}
+        />
+      )}
+
+      {/* Administrator Master Password Management Modal */}
+      {isChangePasswordModalOpen && (
+        <ChangePasswordModal
+          currentUser={currentUser}
+          onClose={() => setIsChangePasswordModalOpen(false)}
+          onPasswordChanged={() => {
+            showToast('Administrator password updated successfully.', 'success');
+            setIsChangePasswordModalOpen(false);
           }}
         />
       )}

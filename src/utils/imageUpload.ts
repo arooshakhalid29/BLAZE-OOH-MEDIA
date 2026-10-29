@@ -2,10 +2,6 @@ import unipoleImg from '../assets/images/unipole_billboard_1790581927863.jpg';
 import doohSmdImg from '../assets/images/dooh_smd_screen_1790581912551.jpg';
 import bridgePanelImg from '../assets/images/bridge_panel_1790581944286.jpg';
 import gantryImg from '../assets/images/gantry_urban_1790581956476.jpg';
-import cantileverImg from '../assets/images/cantilever_billboard_1793256657642.jpg';
-import buildingWrapImg from '../assets/images/building_wrap_ooh_1793256674153.jpg';
-import nightUnipoleImg from '../assets/images/night_unipole_billboard_1793256690586.jpg';
-import urbanDisplayImg from '../assets/images/urban_commercial_display.jpg';
 
 export interface UploadedImageItem {
   id: string;
@@ -34,7 +30,7 @@ export const OOH_STOCK_TEMPLATES: StockTemplateItem[] = [
     type: 'Billboard',
     url: unipoleImg,
     description: 'High-impact roadside unipole billboard in prime arterial urban corridor',
-    recommendedFor: ['Billboard', 'Unipole'],
+    recommendedFor: ['Billboard', 'Unipole', 'Cantilever'],
   },
   {
     id: 'stock-dooh',
@@ -58,40 +54,7 @@ export const OOH_STOCK_TEMPLATES: StockTemplateItem[] = [
     type: 'Bridge Panel',
     url: bridgePanelImg,
     description: 'Continuous horizontal bridge face panel mounted directly on flyover deck',
-    recommendedFor: ['Bridge Panel'],
-  },
-  {
-    id: 'stock-cantilever',
-    label: 'Cantilever Structure',
-    type: 'Cantilever',
-    url: cantileverImg,
-    description: 'L-structure cantilever arm extending outward over main vehicular traffic',
-    recommendedFor: ['Cantilever'],
-  },
-  {
-    id: 'stock-building',
-    label: 'Commercial Building Wrap',
-    type: 'Building Wrap',
-    url: buildingWrapImg,
-    description: 'Mega-scale architectural vinyl building wrap on commercial skyscraper facade',
-    recommendedFor: ['Building Wrap'],
-  },
-  {
-    id: 'stock-night',
-    label: 'Night Illumination Unipole',
-    type: 'Billboard',
-    url: nightUnipoleImg,
-    description: 'Nighttime high-lumen floodlit illumination capture with vibrant vehicular streaks',
-    recommendedFor: ['Billboard', 'Unipole'],
-    isNight: true,
-  },
-  {
-    id: 'stock-commercial',
-    label: 'Urban Commercial Display',
-    type: 'Billboard',
-    url: urbanDisplayImg,
-    description: 'Prime retail district commercial outdoor structure with high footfall',
-    recommendedFor: ['Billboard', 'Metro Bus Shelter'],
+    recommendedFor: ['Bridge Panel', 'Building Wrap'],
   },
 ];
 

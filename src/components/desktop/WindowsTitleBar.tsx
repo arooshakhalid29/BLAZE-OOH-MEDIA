@@ -22,6 +22,7 @@ import {
   Users,
   LogOut,
   Building2,
+  KeyRound,
 } from 'lucide-react';
 import { ViewMode, UserAccount, UserRole } from '../../types/mediaAsset';
 import { auth } from '../../services/firebase';
@@ -40,6 +41,7 @@ interface WindowsTitleBarProps {
   onOpenBookingsModal: () => void;
   onOpenManageClients?: () => void;
   onOpenManageVendors?: () => void;
+  onOpenChangePassword?: () => void;
   onSignOut?: () => void;
   onSwitchRole?: (role: UserRole) => void;
 }
@@ -58,6 +60,7 @@ export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({
   onOpenBookingsModal,
   onOpenManageClients,
   onOpenManageVendors,
+  onOpenChangePassword,
   onSignOut,
   onSwitchRole,
 }) => {
@@ -214,6 +217,19 @@ export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-blue-400" /> Manage Client Accounts...
+                      </span>
+                    </button>
+                  )}
+                  {isAdmin && onOpenChangePassword && (
+                    <button
+                      onClick={() => {
+                        closeMenu();
+                        onOpenChangePassword();
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-amber-500/20 hover:text-amber-300 flex items-center justify-between text-xs"
+                    >
+                      <span className="flex items-center gap-2">
+                        <KeyRound className="w-3.5 h-3.5 text-amber-400" /> Change Administrator Password...
                       </span>
                     </button>
                   )}
@@ -430,6 +446,21 @@ export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({
                               <span>Manage Clients & Credentials...</span>
                             </span>
                             <span className="text-[10px] text-blue-400 font-mono">Admin</span>
+                          </button>
+                        )}
+                        {onOpenChangePassword && (
+                          <button
+                            onClick={() => {
+                              closeMenu();
+                              onOpenChangePassword();
+                            }}
+                            className="w-full text-left px-3 py-1.5 flex items-center justify-between text-xs hover:bg-amber-500/20 hover:text-amber-300 text-slate-200 font-medium cursor-pointer"
+                          >
+                            <span className="flex items-center gap-2">
+                              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Change Administrator Password...</span>
+                            </span>
+                            <span className="text-[10px] text-amber-400 font-mono">Master</span>
                           </button>
                         )}
                       </div>

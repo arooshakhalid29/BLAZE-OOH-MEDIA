@@ -51,5 +51,45 @@
     "permittedCities": [],
     "createdAt": "2026-10-21T07:45:00.000Z",
     "createdBy": "admin@blaze.com.pk"
+  },
+  {
+    "id": "usr_client_542735",
+    "name": "ali",
+    "email": "ali789@gmail.com",
+    "organization": "Advertiser Agency Client",
+    "designation": "Media Planning Executive",
+    "role": "client",
+    "status": "Active",
+    "requiresPasswordChange": false,
+    "permittedCities": [],
+    "createdAt": "2026-10-29T07:05:43.616Z",
+    "createdBy": "admin@blaze.com.pk",
+    "updatedAt": "2026-10-29T07:25:06.159Z"
+  },
+  {
+    "id": "usr_client_730336",
+    "name": "Aroosha Wateel",
+    "email": "waroosh3@gmail.com",
+    "organization": "Advertiser Agency Client",
+    "designation": "Media Planning Executive",
+    "role": "client",
+    "status": "Active",
+    "requiresPasswordChange": false,
+    "permittedCities": [],
+    "createdAt": "2026-10-29T07:08:50.952Z",
+    "createdBy": "admin@blaze.com.pk"
+  },
+  {
+    "id": "usr_client_730337",
+    "name": "Aroosha Wateel",
+    "email": "waroos3@gmail.com",
+    "organization": "Advertiser Agency Client",
+    "designation": "Media Planning Executive",
+    "role": "client",
+    "status": "Active",
+    "requiresPasswordChange": false,
+    "permittedCities": [],
+    "createdAt": "2026-10-29T07:08:50.952Z",
+    "createdBy": "admin@blaze.com.pk"
   }
 ]

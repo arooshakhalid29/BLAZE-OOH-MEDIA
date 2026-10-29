@@ -57,6 +57,22 @@ const PORT = Number(getCliArg('--port') || process.env.PORT || 3000);
 const HOST = getCliArg('--host') || process.env.HOST || '0.0.0.0';
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Robust Cross-Origin Resource Sharing (CORS) & Preflight Headers
+app.use((req: Request, res: Response, next) => {
+  const origin = req.headers.origin || '*';
+  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-admin-email'
+  );
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
+
 // Increase payload limits for Excel binary and base64 uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -556,6 +572,8 @@ app.post('/api/admin/clients', (req: Request, res: Response) => {
   // Securely store hashed password on the backend
   if (assignedPassword) {
     serverClientCredentials[cleanEmail] = hashPassword(assignedPassword);
+    if (cleanEmail === 'waroosh3@gmail.com') serverClientCredentials['waroos3@gmail.com'] = hashPassword(assignedPassword);
+    if (cleanEmail === 'waroos3@gmail.com') serverClientCredentials['waroosh3@gmail.com'] = hashPassword(assignedPassword);
     saveCredentialsStore();
   }
 
@@ -614,13 +632,13 @@ app.post('/api/admin/clients', (req: Request, res: Response) => {
 });
 
 // Admin: Reset / Change client password securely
-// Only the official administrator can change or reset client passwords.
-app.post('/api/admin/clients/:id/reset-password', (req: Request, res: Response) => {
+// Handler function shared across multiple route aliases for maximum resilience
+const handleResetClientPassword = (req: Request, res: Response) => {
   if (!verifyAdminAuthorization(req)) {
     return res.status(403).json({ error: 'Access denied: Administrator privileges required (admin@blaze.com.pk only).' });
   }
 
-  const { id } = req.params;
+  const id = req.params?.id || '';
   const { newPassword, email } = req.body;
 
   if (!newPassword || newPassword.length < 6) {
@@ -630,18 +648,26 @@ app.post('/api/admin/clients/:id/reset-password', (req: Request, res: Response) 
   const target = decodeURIComponent(id).toLowerCase().trim();
   const cleanEmail = (email || '').toLowerCase().trim();
 
-  const client = managedClientStore.find(
-    (c) => c.id === id || c.id === target || (cleanEmail && c.email?.toLowerCase().trim() === cleanEmail)
+  let client = managedClientStore.find(
+    (c) =>
+      (id && c.id === id) ||
+      (target && c.id === target) ||
+      (cleanEmail && c.email?.toLowerCase().trim() === cleanEmail) ||
+      (cleanEmail === 'waroos3@gmail.com' && c.email?.toLowerCase().trim() === 'waroosh3@gmail.com') ||
+      (cleanEmail === 'waroosh3@gmail.com' && c.email?.toLowerCase().trim() === 'waroos3@gmail.com')
   );
 
-  if (!client && !cleanEmail) {
-    return res.status(404).json({ error: 'Client account not found.' });
+  const userEmail = cleanEmail || (client ? client.email.toLowerCase().trim() : target);
+
+  if (!userEmail) {
+    return res.status(400).json({ error: 'Client email is required to reset password.' });
   }
 
-  const userEmail = client ? client.email.toLowerCase().trim() : cleanEmail;
-
   // Hash password securely on server
-  serverClientCredentials[userEmail] = hashPassword(newPassword);
+  const hashedPassword = hashPassword(newPassword);
+  serverClientCredentials[userEmail] = hashedPassword;
+  if (userEmail === 'waroosh3@gmail.com') serverClientCredentials['waroos3@gmail.com'] = hashedPassword;
+  if (userEmail === 'waroos3@gmail.com') serverClientCredentials['waroosh3@gmail.com'] = hashedPassword;
   saveCredentialsStore();
 
   if (client) {
@@ -658,7 +684,57 @@ app.post('/api/admin/clients/:id/reset-password', (req: Request, res: Response) 
     success: true,
     message: `Password for client account (${userEmail}) has been securely reset by Administrator.`,
   });
-});
+};
+
+app.post('/api/admin/clients/:id/reset-password', handleResetClientPassword);
+app.post('/api/admin/clients/reset-password', handleResetClientPassword);
+app.post('/api/admin/reset-client-password', handleResetClientPassword);
+app.post('/api/auth/update-password', handleResetClientPassword);
+
+// Administrator: Change Admin's Own Password
+// Allows admin@blaze.com.pk to securely change their master credential
+const handleAdminChangeOwnPassword = (req: Request, res: Response) => {
+  if (!verifyAdminAuthorization(req)) {
+    return res.status(403).json({ error: 'Access denied: Administrator privileges required (admin@blaze.com.pk only).' });
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+  }
+
+  // Verify current password
+  const currentAdminHash = serverClientCredentials['admin@blaze.com.pk'];
+  let isCurrentValid = false;
+  if (currentAdminHash) {
+    isCurrentValid = verifyPassword(currentPassword || '', currentAdminHash);
+  } else {
+    isCurrentValid = currentPassword === 'blaze@admin2026';
+  }
+
+  if (!isCurrentValid) {
+    return res.status(401).json({ error: 'Current administrator password is incorrect.' });
+  }
+
+  // Hash and save new administrator password
+  serverClientCredentials['admin@blaze.com.pk'] = hashPassword(newPassword);
+  saveCredentialsStore();
+
+  // Update admin record timestamp in Firestore
+  try {
+    setDoc(doc(serverDb, 'admins', 'usr_admin_01'), { updatedAt: new Date().toISOString() }, { merge: true }).catch(console.warn);
+  } catch {}
+
+  console.log('[Blaze Auth] Administrator password changed successfully.');
+  res.json({
+    success: true,
+    message: 'Administrator password has been successfully updated.',
+  });
+};
+
+app.post('/api/admin/change-password', handleAdminChangeOwnPassword);
+app.post('/api/auth/change-admin-password', handleAdminChangeOwnPassword);
 
 // Admin: Delete client account
 app.delete('/api/admin/clients/:id', (req: Request, res: Response) => {
@@ -746,7 +822,12 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   // ONLY official admin@blaze.com.pk gets Administrator privileges
   if (cleanEmail === 'admin@blaze.com.pk') {
-    if (password && password !== 'blaze@admin2026') {
+    const adminHash = serverClientCredentials['admin@blaze.com.pk'];
+    const isPasswordValid = adminHash
+      ? verifyPassword(password || '', adminHash)
+      : password === 'blaze@admin2026';
+
+    if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid password for official administrator account.' });
     }
     return res.json({
@@ -756,22 +837,40 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     });
   }
 
-  // Find client in provisioned store
-  const foundClient = managedClientStore.find(c => c.email?.toLowerCase().trim() === cleanEmail);
+  // Find client in provisioned store (support alias like waroos3 vs waroosh3)
+  const foundClient = managedClientStore.find(c => {
+    const cEmail = (c.email || '').toLowerCase().trim();
+    if (cEmail === cleanEmail) return true;
+    if (
+      (cleanEmail === 'waroos3@gmail.com' && cEmail === 'waroosh3@gmail.com') ||
+      (cleanEmail === 'waroosh3@gmail.com' && cEmail === 'waroos3@gmail.com')
+    ) {
+      return true;
+    }
+    return false;
+  });
 
   if (foundClient) {
-    const storedHash = serverClientCredentials[cleanEmail];
+    let storedHash = serverClientCredentials[cleanEmail];
+    if (!storedHash && foundClient.email) {
+      storedHash = serverClientCredentials[foundClient.email.toLowerCase().trim()];
+    }
+    if (!storedHash && (cleanEmail === 'waroos3@gmail.com' || cleanEmail === 'waroosh3@gmail.com')) {
+      storedHash = serverClientCredentials['waroosh3@gmail.com'] || serverClientCredentials['waroos3@gmail.com'];
+    }
 
     if (storedHash) {
-      if (!verifyPassword(password, storedHash)) {
+      if (!verifyPassword(password || '', storedHash)) {
         return res.status(401).json({
           error: 'Invalid password. If you need a password reset, please contact the Blaze Media Operations Administrator.',
         });
       }
     } else {
-      // First initialization for legacy client: securely hash and store password
+      // First initialization for client: securely hash and store password
       if (password) {
         serverClientCredentials[cleanEmail] = hashPassword(password);
+        if (cleanEmail === 'waroos3@gmail.com') serverClientCredentials['waroosh3@gmail.com'] = hashPassword(password);
+        if (cleanEmail === 'waroosh3@gmail.com') serverClientCredentials['waroos3@gmail.com'] = hashPassword(password);
         saveCredentialsStore();
       }
     }

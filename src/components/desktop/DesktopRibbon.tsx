@@ -19,6 +19,7 @@ import {
   User,
   Users,
   Building2,
+  KeyRound,
 } from 'lucide-react';
 import { ViewMode, Currency, UserAccount } from '../../types/mediaAsset';
 
@@ -45,6 +46,7 @@ interface DesktopRibbonProps {
   onOpenBookingsModal: () => void;
   onOpenManageClients?: () => void;
   onOpenManageVendors?: () => void;
+  onOpenChangePassword?: () => void;
   selectedCitiesCount?: number;
   onOpenCitiesModal?: () => void;
 }
@@ -72,6 +74,7 @@ export const DesktopRibbon: React.FC<DesktopRibbonProps> = ({
   onOpenBookingsModal,
   onOpenManageClients,
   onOpenManageVendors,
+  onOpenChangePassword,
   selectedCitiesCount = 0,
   onOpenCitiesModal,
 }) => {
@@ -262,6 +265,18 @@ export const DesktopRibbon: React.FC<DesktopRibbonProps> = ({
           >
             <Building2 className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Vendors</span>
+          </button>
+        )}
+
+        {/* Change Admin Password - Admin Only */}
+        {isAdmin && onOpenChangePassword && (
+          <button
+            onClick={onOpenChangePassword}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border border-amber-600/50 rounded transition-colors font-medium shadow-xs cursor-pointer"
+            title="Change official administrator master password (admin@blaze.com.pk)"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Password</span>
           </button>
         )}
 
